@@ -387,9 +387,14 @@ Hashtag rules:
         const frames = await extractFrames(selectedFile, 4);
         setProgress('AI is reading your video…');
         const content = [
-          ...frames.map(b64 => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } })),
-          { type: 'text', text: buildPrompt(true) }
-        ];
+  { type: 'text', text: buildPrompt(true) },
+  ...frames.map(b64 => ({
+    type: 'image_url',
+    image_url: {
+      url: `data:image/jpeg;base64,${b64}`
+    }
+  }))
+];
         parsed = await callBackend([{ role: 'user', content }]);
       } else {
         const d = document.getElementById('videoDesc').value.trim();
