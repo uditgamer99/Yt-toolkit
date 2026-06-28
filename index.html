@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YTBoost — YouTube AI Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0D0D0F;--surface:#17171B;--card:#1E1E24;--border:#2C2C36;--red:#FF2B2B;--red-glow:rgba(255,43,43,0.18);--text:#F0EEF8;--muted:#8B8A9B}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;line-height:1.6}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(13,13,15,0.92);backdrop-filter:blur(14px);z-index:100}
+  .logo{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:-0.5px}
+  .logo span{color:var(--red)}
+  .badge{background:var(--red-glow);color:var(--red);border:1px solid rgba(255,43,43,0.3);font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+
+  .main{max-width:780px;margin:0 auto;padding:0 16px 80px}
+  .hero{text-align:center;padding:50px 0 34px;position:relative}
+  .hero::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:500px;height:260px;background:radial-gradient(ellipse,rgba(255,43,43,0.1) 0%,transparent 70%);pointer-events:none}
+  .hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.7rem,5vw,2.8rem);font-weight:800;line-height:1.2;letter-spacing:-1px;margin-bottom:12px}
+  .hero h1 span{color:var(--red)}
+  .hero p{color:var(--muted);font-size:.92rem;max-width:420px;margin:0 auto}
+
+  /* tabs */
+  .mode-row{display:flex;gap:6px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px}
+  .mode-btn{flex:1;padding:10px 8px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .18s}
+  .mode-btn.active{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(255,43,43,.3)}
+
+  /* upload zone */
+  .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:40px 20px;text-align:center;background:var(--surface);margin-bottom:16px;cursor:pointer;transition:all .2s}
+  .upload-zone:hover{border-color:var(--red);background:rgba(255,43,43,.03)}
+  .upload-zone .icon{font-size:2.4rem;margin-bottom:10px}
+  .upload-zone h3{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;margin-bottom:6px}
+  .upload-zone p{color:var(--muted);font-size:.82rem;margin-bottom:14px}
+  .choose-btn{padding:11px 26px;background:var(--red);color:#fff;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer}
+
+  /* preview */
+  .preview-box{border:2px solid var(--red);border-radius:14px;padding:14px 16px;background:var(--surface);margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px}
+  .preview-box .fname{font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .remove-btn{background:rgba(255,43,43,.15);border:1px solid rgba(255,43,43,.3);color:var(--red);padding:5px 12px;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;flex-shrink:0}
+
+  /* hint box */
+  .hint-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:none}
+  .hint-box label{font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block}
+  .hint-box textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:.88rem;resize:none;outline:none;height:80px}
+  .hint-box textarea:focus{border-color:var(--red)}
+  .hint-box textarea::placeholder{color:var(--muted)}
+
+  /* text mode textarea */
+  .text-area-wrap{display:none;margin-bottom:16px}
+  textarea.main-ta{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;resize:vertical;min-height:110px;outline:none;transition:border-color .2s}
+  textarea.main-ta:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
+  textarea.main-ta::placeholder{color:var(--muted)}
+
+  /* vibe */
+  .section-label{font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block}
+  .vibe-row{margin-bottom:20px}
+  .vibes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .vibe-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s}
+  .vibe-btn.active{background:rgba(255,43,43,.15);border-color:var(--red);color:#ff6b6b}
+
+  /* gen btn */
+  .gen-btn{width:100%;padding:16px;border-radius:12px;border:none;background:var(--red);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .18s}
+  .gen-btn:hover:not(:disabled){background:#e01e1e;transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,43,43,.35)}
+  .gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .progress-lbl{text-align:center;font-size:.78rem;color:var(--muted);margin-top:8px;min-height:16px}
+  .error-box{background:rgba(255,43,43,.08);border:1px solid rgba(255,43,43,.25);color:#f87171;padding:12px 16px;border-radius:10px;font-size:.85rem;margin-top:14px;display:none}
+
+  /* output */
+  .out-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:20px;display:none;animation:fadeUp .3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .card-title{font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red)}
+  .copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .15s}
+  .copy-btn:hover{border-color:var(--red);color:var(--red)}
+  .copy-btn.copied{border-color:#22c55e;color:#22c55e}
+  .caption-box{padding:18px}
+  .vibe-pill{font-family:'Space Grotesk',sans-serif;font-size:.65rem;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .caption-text{font-size:.97rem;line-height:1.75}
+  .tag-wrap{display:flex;flex-wrap:wrap;gap:9px;padding:18px}
+  .chip{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);color:#c084fc;padding:6px 13px;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s}
+  .chip:hover{background:rgba(168,85,247,.22)}
+  .chip.copied{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#86efac}
+
+  /* how */
+  .how{margin-top:52px}
+  .how-label{font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:18px}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+  .step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 18px}
+  .step-num{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:800;color:var(--border);margin-bottom:10px}
+  .step h3{font-family:'Space Grotesk',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:6px}
+  .step p{font-size:.8rem;color:var(--muted)}
+
+  footer{text-align:center;padding:24px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem;margin-top:32px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">YT<span> Boost</span></div>
+  <div class="badge">AI Powered</div>
+</header>
+
+<div class="main">
+  <div class="hero">
+    <h1>Your YouTube content,<br><span>supercharged by AI</span></h1>
+    <p>Upload your video or describe it — get a short caption + 20 SEO hashtags instantly.</p>
+  </div>
+
+  <!-- Mode -->
+  <div class="mode-row">
+    <button class="mode-btn active" id="modeUpload">🎬 Upload Video</button>
+    <button class="mode-btn" id="modeText">✍️ Type Description</button>
+  </div>
+
+  <!-- Upload mode -->
+  <div id="uploadMode">
+    <input type="file" id="videoFile" accept="video/*" style="display:none" />
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">🎬</div>
+      <h3>Tap to choose your video</h3>
+      <p>MP4, MOV, AVI, WEBM supported</p>
+      <button class="choose-btn" id="chooseBtn">📂 Choose Video</button>
+    </div>
+    <div class="preview-box" id="previewBox">
+      <span class="fname" id="previewName"></span>
+      <button class="remove-btn" id="removeBtn">✕ Remove</button>
+    </div>
+    <!-- optional hint -->
+    <div class="hint-box" id="hintBox">
+      <label>Tell AI more about your video (optional)</label>
+      <textarea id="hintText" placeholder="e.g. Free Fire gameplay, clutch 1v4 moment, aggressive style..."></textarea>
+    </div>
+  </div>
+
+  <!-- Text mode -->
+  <div class="text-area-wrap" id="textMode">
+    <textarea class="main-ta" id="videoDesc" placeholder="e.g. Free Fire gameplay video, clutch 1v4 moment, very aggressive style..."></textarea>
+  </div>
+
+  <!-- Vibe -->
+  <div class="vibe-row">
+    <span class="section-label">Caption vibe</span>
+    <div class="vibes">
+      <button class="vibe-btn active" data-vibe="hype">🔥 Hype</button>
+      <button class="vibe-btn" data-vibe="chill">😎 Chill</button>
+      <button class="vibe-btn" data-vibe="funny">😂 Funny</button>
+      <button class="vibe-btn" data-vibe="emotional">💙 Emotional</button>
+      <button class="vibe-btn" data-vibe="mysterious">🕵️ Mysterious</button>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <button class="gen-btn" id="genBtn" disabled>
+    <span id="genTxt">Upload a video first</span>
+  </button>
+  <div class="progress-lbl" id="progressLbl"></div>
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Output -->
+  <div class="out-card" id="captionCard">
+    <div class="card-head">
+      <div class="card-title"><div class="dot"></div>Short Caption</div>
+      <button class="copy-btn" id="copyCaption">Copy</button>
+    </div>
+    <div class="caption-box">
+      <div class="vibe-pill" id="vibePill"></div>
+      <div class="caption-text" id="captionText"></div>
+    </div>
+  </div>
+
+  <div class="out-card" id="hashCard">
+    <div class="card-head">
+      <div class="card-title"><div class="dot"></div>SEO Hashtags</div>
+      <button class="copy-btn" id="copyAll">Copy All</button>
+    </div>
+    <div class="tag-wrap" id="tagWrap"></div>
+  </div>
+
+  <!-- How it works -->
+  <div class="how">
+    <div class="how-label">How it works</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><h3>Upload or describe</h3><p>Choose your video file or just type what it's about.</p></div>
+      <div class="step"><div class="step-num">02</div><h3>Pick a vibe</h3><p>Hype, chill, funny, emotional or mysterious — your call.</p></div>
+      <div class="step"><div class="step-num">03</div><h3>Copy & paste</h3><p>Short caption + 20 SEO hashtags ready for YouTube.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer>YTBoost — Powered by Groq AI · 2026</footer>
+
+<script>
+  let activeMode = 'upload';
+  let activeVibe = 'hype';
+  let selectedFile = null;
+
+  const vibeGuide = {
+    hype:       'energetic, punchy, capitalise power words, fire energy 🔥',
+    chill:      'relaxed, cool, lo-fi vibes 😎',
+    funny:      'witty, playful, sarcastic humor 😂',
+    emotional:  'heartfelt, sincere, warm emojis 💙',
+    mysterious: 'cryptic, suspenseful, dramatic 🕵️'
+  };
+
+  // ── MODE ──
+  document.getElementById('modeUpload').addEventListener('click', () => {
+    activeMode = 'upload';
+    document.getElementById('modeUpload').classList.add('active');
+    document.getElementById('modeText').classList.remove('active');
+    document.getElementById('uploadMode').style.display = 'block';
+    document.getElementById('textMode').style.display = 'none';
+    updateBtn(); clearOut();
+  });
+  document.getElementById('modeText').addEventListener('click', () => {
+    activeMode = 'text';
+    document.getElementById('modeText').classList.add('active');
+    document.getElementById('modeUpload').classList.remove('active');
+    document.getElementById('textMode').style.display = 'block';
+    document.getElementById('uploadMode').style.display = 'none';
+    document.getElementById('genBtn').disabled = false;
+    document.getElementById('genTxt').textContent = 'Generate Caption + Hashtags ✦';
+    clearOut();
+  });
+
+  // ── VIBE ──
+  document.querySelectorAll('.vibe-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeVibe = btn.dataset.vibe;
+    });
+  });
+
+  // ── FILE ──
+  const videoFile = document.getElementById('videoFile');
+  document.getElementById('chooseBtn').addEventListener('click', e => { e.stopPropagation(); videoFile.click(); });
+  document.getElementById('uploadZone').addEventListener('click', () => videoFile.click());
+  videoFile.addEventListener('change', () => { if (videoFile.files[0]) handleFile(videoFile.files[0]); });
+  document.getElementById('removeBtn').addEventListener('click', removeFile);
+
+  function handleFile(file) {
+    selectedFile = file;
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewName').textContent = '🎬 ' + file.name;
+    document.getElementById('previewBox').style.display = 'flex';
+    document.getElementById('hintBox').style.display = 'block';
+    updateBtn(); clearOut();
+  }
+  function removeFile() {
+    selectedFile = null; videoFile.value = '';
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('previewBox').style.display = 'none';
+    document.getElementById('hintBox').style.display = 'none';
+    document.getElementById('hintText').value = '';
+    updateBtn(); clearOut();
+  }
+  function updateBtn() {
+    const btn = document.getElementById('genBtn');
+    const txt = document.getElementById('genTxt');
+    if (activeMode === 'upload' && !selectedFile) {
+      btn.disabled = true; txt.textContent = 'Upload a video first';
+    } else {
+      btn.disabled = false; txt.textContent = 'Generate Caption + Hashtags ✦';
+    }
+  }
+  function clearOut() {
+    document.getElementById('captionCard').style.display = 'none';
+    document.getElementById('hashCard').style.display = 'none';
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('progressLbl').textContent = '';
+  }
+
+  // ── CALL BACKEND ──
+  async function callBackend(prompt) {
+    const res = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }]
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.text;
+  }
+
+  function buildPrompt(description) {
+    return `You are a YouTube content expert. Based on this video description, generate a short caption and SEO hashtags.
+
+Video: "${description}"
+
+Return ONLY valid JSON (no markdown, no backticks, nothing else):
+{"caption":"your caption here","hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5","#tag6","#tag7","#tag8","#tag9","#tag10","#tag11","#tag12","#tag13","#tag14","#tag15","#tag16","#tag17","#tag18","#tag19","#tag20"]}
+
+Caption rules:
+- MAXIMUM 2 sentences
+- Vibe: ${vibeGuide[activeVibe]}
+- 1-2 matching emojis inline
+- No hashtags in caption
+- Sound like a real creator, not a robot
+
+Hashtag rules:
+- Exactly 20 hashtags
+- Mix broad + niche tags
+- Relevant to the video content`;
+  }
+
+  // ── GENERATE ──
+  document.getElementById('genBtn').addEventListener('click', async () => {
+    clearOut();
+    const btn = document.getElementById('genBtn');
+    const txt = document.getElementById('genTxt');
+    const prog = document.getElementById('progressLbl');
+    const errBox = document.getElementById('errorBox');
+
+    let description = '';
+    if (activeMode === 'upload') {
+      const hint = document.getElementById('hintText').value.trim();
+      // Use filename + hint as description for Groq (no vision)
+      const fname = selectedFile.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+      description = hint ? `${fname}. ${hint}` : fname;
+    } else {
+      description = document.getElementById('videoDesc').value.trim();
+      if (!description) { errBox.textContent = '⚠️ Please describe your video first.'; errBox.style.display = 'block'; return; }
+    }
+
+    btn.disabled = true;
+    txt.innerHTML = '<div class="spinner"></div>';
+    prog.textContent = 'Generating with Groq AI…';
+
+    try {
+      const raw = await callBackend(buildPrompt(description));
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      // Caption
+      document.getElementById('vibePill').textContent = activeVibe.toUpperCase() + ' VIBE';
+      document.getElementById('captionText').textContent = parsed.caption;
+      document.getElementById('captionCard').style.display = 'block';
+
+      // Hashtags
+      const wrap = document.getElementById('tagWrap');
+      wrap.innerHTML = '';
+      parsed.hashtags.forEach(tag => {
+        const chip = document.createElement('div');
+        chip.className = 'chip'; chip.textContent = tag;
+        chip.addEventListener('click', () => {
+          navigator.clipboard.writeText(tag);
+          chip.classList.add('copied');
+          const o = chip.textContent; chip.textContent = '✓';
+          setTimeout(() => { chip.textContent = o; chip.classList.remove('copied'); }, 900);
+        });
+        wrap.appendChild(chip);
+      });
+      document.getElementById('hashCard').style.display = 'block';
+      prog.textContent = '';
+
+    } catch(e) {
+      prog.textContent = '';
+      errBox.textContent = '⚠️ ' + (e.message || 'Something went wrong. Try again.');
+      errBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      txt.textContent = 'Generate Caption + Hashtags ✦';
+    }
+  });
+
+  // ── COPY ──
+  document.getElementById('copyCaption').addEventListener('click', function() {
+    navigator.clipboard.writeText(document.getElementById('captionText').textContent);
+    this.textContent = '✓ Copied!'; this.classList.add('copied');
+    setTimeout(() => { this.textContent = 'Copy'; this.classList.remove('copied'); }, 1600);
+  });
+  document.getElementById('copyAll').addEventListener('click', function() {
+    const tags = Array.from(document.querySelectorAll('.chip')).map(c => c.textContent).join(' ');
+    navigator.clipboard.writeText(tags);
+    this.textContent = '✓ Copied!'; this.classList.add('copied');
+    setTimeout(() => { this.textContent = 'Copy All'; this.classList.remove('copied'); }, 1600);
+  });
+</script>
+</body>
+</html>
